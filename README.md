@@ -1,5 +1,7 @@
 # IntentText Python
 
+[![PyPI](https://img.shields.io/pypi/v/intenttext)](https://pypi.org/project/intenttext/)
+
 Python implementation of the IntentText parser and renderer.
 
 Independent implementation (not a Node.js wrapper), designed for Python workflows and AI stacks.
