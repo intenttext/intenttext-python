@@ -61,6 +61,32 @@ pip install -e .[dev]
 pytest
 ```
 
+## Release (PyPI)
+
+```bash
+# 1) Ensure tests pass
+python3 -m pytest -q
+
+# 2) Build source + wheel
+python3 -m pip install -U hatch twine
+hatch build
+
+# 3) Validate package metadata and long description
+twine check dist/*
+
+# 4) Upload (interactive)
+twine upload dist/*
+```
+
+Tag-based release flow:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Action publish workflow uses `PYPI_API_TOKEN` for automated release on `v*` tags.
+
 ## License
 
 MIT

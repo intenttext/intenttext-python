@@ -287,8 +287,7 @@ def _parse_keyword_line(
 
 
 def _parse_content_and_properties(rest: str) -> tuple[str, dict[str, Any]]:
-    # Split only on property pipes (` | key:`), not links/markdown text.
-    parts = re.split(r"\s+\|\s+(?=[\w-]+:\s*)", rest)
+    parts = [p.strip() for p in rest.split("|")]
     content = parts[0].strip() if parts else ""
     properties: dict[str, Any] = {}
 

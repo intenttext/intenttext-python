@@ -27,6 +27,8 @@ def merge_data(template: IntentDocument, data: dict[str, Any]) -> IntentDocument
             for k, v in block.properties.items()
         }
 
+    _refresh_metadata(doc)
+
     return doc
 
 
@@ -65,3 +67,19 @@ def _get_by_path(obj: Any, path: str) -> Any:
             return None
 
     return current
+
+
+def _refresh_metadata(doc: IntentDocument) -> None:
+    for block in doc.blocks:
+        if block.type == "title":
+            doc.metadata.title = block.content
+        elif block.type == "summary":
+            doc.metadata.summary = block.content
+        elif block.type == "agent":
+            doc.metadata.agent = block.content
+            if "model" in block.properties:
+                doc.metadata.model = str(block.properties["model"])
+        elif block.type == "context":
+            doc.metadata.context.update(
+                {k: str(v) for k, v in block.properties.items()}
+            )
