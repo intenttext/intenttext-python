@@ -71,6 +71,7 @@ AGENTIC_KEYWORDS = {
     "progress",
     "import",
     "export",
+    "policy",
 }
 
 ALL_KEYWORDS = (

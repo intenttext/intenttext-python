@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "intenttext"
-version = "1.0.0"
+version = "1.1.0"
 description = "IntentText - the semantic document format that is natively JSON"
 readme = "README.md"
 license = { text = "MIT" }
