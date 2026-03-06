@@ -3,6 +3,7 @@ from .parser import parse, parse_safe
 from .query import query
 from .renderer import render_html, render_markdown, render_print
 from .source import to_source
+from .trust import compute_document_hash, find_history_boundary, seal_document, verify_document
 from .types import (
     InlineSegment,
     IntentBlock,
@@ -15,7 +16,7 @@ from .types import (
 )
 from .validate import validate
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "parse",
@@ -28,6 +29,10 @@ __all__ = [
     "validate",
     "query",
     "to_source",
+    "compute_document_hash",
+    "find_history_boundary",
+    "seal_document",
+    "verify_document",
     "IntentDocument",
     "IntentBlock",
     "IntentMetadata",
