@@ -74,6 +74,8 @@ def render_markdown(doc: IntentDocument) -> str:
                 lines.append(f"> - {author}")
         elif t in {"info", "warning", "tip"}:
             lines.append(f"> **{t.upper()}:** {content}")
+        elif t == "success":
+            lines.append(f"> **SUCCESS:** {content}")
         elif t == "table":
             rows = block.properties.get("rows", [])
             if rows:
@@ -140,5 +142,82 @@ def _render_block_html(block: IntentBlock) -> str:
         return f'<table class="it-block it-table"><thead><tr>{thead}</tr></thead><tbody>{tbody}</tbody></table>'
     if t == "divider":
         return '<hr class="it-block it-divider"/>'
+    if t == "byline":
+        date = block.properties.get("date", "")
+        pub = block.properties.get("publication", "")
+        meta = ""
+        if date:
+            meta += f' <span class="it-date">{html.escape(str(date))}</span>'
+        if pub:
+            meta += f' <span class="it-publication">{html.escape(str(pub))}</span>'
+        return f'<p class="it-block it-byline">{content}{meta}</p>'
+    if t == "epigraph":
+        by = block.properties.get("by")
+        attr = f"<cite>{html.escape(str(by))}</cite>" if by else ""
+        return f'<blockquote class="it-block it-epigraph"><p>{content}</p>{attr}</blockquote>'
+    if t == "caption":
+        return f'<figcaption class="it-block it-caption">{content}</figcaption>'
+    if t == "footnote":
+        text = block.properties.get("text", content)
+        return f'<aside class="it-block it-footnote"><sup>{content}</sup> {html.escape(str(text))}</aside>'
+    if t == "toc":
+        return f'<nav class="it-block it-toc"><strong>{content or "Table of Contents"}</strong></nav>'
+    if t == "dedication":
+        return f'<p class="it-block it-dedication"><em>{content}</em></p>'
+    if t == "badge":
+        return f'<span class="it-block it-badge">{content}</span>'
+    # Trust blocks
+    if t == "track":
+        version = block.properties.get("version", "")
+        by = block.properties.get("by", "")
+        return f'<div class="it-block it-track">Tracking v{html.escape(str(version))} by {html.escape(str(by))}</div>'
+    if t == "approve":
+        by = block.properties.get("by", "")
+        role = block.properties.get("role", "")
+        return f'<div class="it-block it-approve">{content} — {html.escape(str(by))}{" (" + html.escape(str(role)) + ")" if role else ""}</div>'
+    if t == "sign":
+        role = block.properties.get("role", "")
+        return f'<div class="it-block it-sign">Signed: {content}{" (" + html.escape(str(role)) + ")" if role else ""}</div>'
+    if t == "freeze":
+        return f'<div class="it-block it-freeze">Document sealed{" — " + html.escape(str(block.properties.get("status", ""))) if block.properties.get("status") else ""}</div>'
+    if t == "revision":
+        return f'<div class="it-block it-revision">{content}</div>'
+    # Print layout
+    if t in {"header", "footer", "watermark"}:
+        return f'<div class="it-block it-{t}">{content}</div>'
+    if t == "signline":
+        return f'<div class="it-block it-signline"><hr/><span>{content}</span></div>'
+    # v2.11 expansion
+    if t == "def":
+        meaning = block.properties.get("meaning", "")
+        return f'<dl class="it-block it-def"><dt>{content}</dt><dd>{html.escape(str(meaning))}</dd></dl>'
+    if t == "metric":
+        value = block.properties.get("value", "")
+        return f'<div class="it-block it-metric"><strong>{content}</strong>: {html.escape(str(value))}</div>'
+    if t == "amendment":
+        return f'<div class="it-block it-amendment">{content}</div>'
+    if t == "figure":
+        return f'<figure class="it-block it-figure">{content}</figure>'
+    if t == "contact":
+        role = block.properties.get("role", "")
+        email = block.properties.get("email", "")
+        parts = [content]
+        if role:
+            parts.append(html.escape(str(role)))
+        if email:
+            parts.append(f'<a href="mailto:{html.escape(str(email))}">{html.escape(str(email))}</a>')
+        return f'<div class="it-block it-contact">{" — ".join(parts)}</div>'
+    if t == "deadline":
+        date = block.properties.get("date", "")
+        return f'<div class="it-block it-deadline">{content}{" — " + html.escape(str(date)) if date else ""}</div>'
+    # Agentic blocks
+    if t in {"step", "decision", "gate", "checkpoint", "handoff", "trigger",
+             "audit", "emit", "result", "policy", "error", "retry", "wait",
+             "parallel", "loop", "call", "progress", "import", "export"}:
+        return f'<div class="it-block it-agentic it-{t}"><span class="it-keyword">{t}:</span> {content}</div>'
+    if t == "meta":
+        return f'<div class="it-block it-meta">{content}</div>'
+    if t == "embed":
+        return f'<div class="it-block it-embed">{content}</div>'
 
     return f'<p class="it-block it-{html.escape(t)}">{content}</p>'

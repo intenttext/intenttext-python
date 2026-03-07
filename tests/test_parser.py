@@ -19,7 +19,7 @@ def test_parse_returns_document_and_metadata() -> None:
         )
     )
 
-    assert doc.version == "2.0"
+    assert doc.version == "2.11"
     assert doc.metadata.title == "Demo"
     assert doc.metadata.summary == "A short summary"
     assert doc.metadata.agent == "orchestrator"

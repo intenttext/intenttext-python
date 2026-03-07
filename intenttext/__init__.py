@@ -1,5 +1,5 @@
 from .merge import merge_data, parse_and_merge
-from .parser import parse, parse_safe
+from .parser import parse, parse_safe, ALIASES, ALL_KEYWORDS
 from .query import query
 from .renderer import render_html, render_markdown, render_print
 from .source import to_source
@@ -11,12 +11,15 @@ from .types import (
     IntentMetadata,
     ParseResult,
     ParseWarning,
+    TrackingInfo,
+    SignatureInfo,
+    FreezeInfo,
     ValidationIssue,
     ValidationResult,
 )
 from .validate import validate
 
-__version__ = "1.1.0"
+__version__ = "2.11.0"
 
 __all__ = [
     "parse",
@@ -33,9 +36,14 @@ __all__ = [
     "find_history_boundary",
     "seal_document",
     "verify_document",
+    "ALIASES",
+    "ALL_KEYWORDS",
     "IntentDocument",
     "IntentBlock",
     "IntentMetadata",
+    "TrackingInfo",
+    "SignatureInfo",
+    "FreezeInfo",
     "InlineSegment",
     "ParseResult",
     "ParseWarning",

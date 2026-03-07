@@ -10,6 +10,9 @@ from .types import (
     IntentMetadata,
     ParseResult,
     ParseWarning,
+    TrackingInfo,
+    SignatureInfo,
+    FreezeInfo,
 )
 
 DOCUMENT_HEADER_KEYWORDS = {
@@ -17,6 +20,8 @@ DOCUMENT_HEADER_KEYWORDS = {
     "context",
     "font",
     "page",
+    "model",
+    "meta",
 }
 
 STRUCTURE_KEYWORDS = {
@@ -27,6 +32,11 @@ STRUCTURE_KEYWORDS = {
     "note",
     "toc",
     "break",
+    "divider",
+    "headers",
+    "row",
+    "embed",
+    "end",
 }
 
 CONTENT_KEYWORDS = {
@@ -72,6 +82,31 @@ AGENTIC_KEYWORDS = {
     "import",
     "export",
     "policy",
+    "status",
+}
+
+TRUST_KEYWORDS = {
+    "track",
+    "approve",
+    "sign",
+    "freeze",
+    "revision",
+}
+
+PRINT_LAYOUT_KEYWORDS = {
+    "header",
+    "footer",
+    "watermark",
+    "signline",
+}
+
+V211_KEYWORDS = {
+    "def",
+    "metric",
+    "amendment",
+    "figure",
+    "contact",
+    "deadline",
 }
 
 ALL_KEYWORDS = (
@@ -80,7 +115,80 @@ ALL_KEYWORDS = (
     | CONTENT_KEYWORDS
     | WRITER_KEYWORDS
     | AGENTIC_KEYWORDS
+    | TRUST_KEYWORDS
+    | PRINT_LAYOUT_KEYWORDS
+    | V211_KEYWORDS
 )
+
+ALIASES: dict[str, str] = {
+    # Writer aliases
+    "text": "note",
+    "body": "note",
+    "p": "note",
+    "paragraph": "note",
+    "h1": "title",
+    "h2": "section",
+    "h3": "sub",
+    "heading": "section",
+    "subheading": "sub",
+    "blockquote": "quote",
+    "cite": "quote",
+    # Task aliases
+    "check": "task",
+    "todo": "task",
+    "action": "task",
+    "item": "task",
+    "completed": "done",
+    "finished": "done",
+    # Policy aliases
+    "rule": "policy",
+    "constraint": "policy",
+    "guard": "policy",
+    "requirement": "policy",
+    # Agent / workflow aliases
+    "log": "audit",
+    "lock": "freeze",
+    "on": "trigger",
+    "run": "step",
+    "if": "decision",
+    # Backward compat
+    "question": "ask",
+    "subsection": "sub",
+    # v2.11 ref aliases
+    "references": "ref",
+    "see": "ref",
+    "related": "ref",
+    # v2.11 def aliases
+    "define": "def",
+    "term": "def",
+    "glossary": "def",
+    # v2.11 metric aliases
+    "kpi": "metric",
+    "measure": "metric",
+    "stat": "metric",
+    # v2.11 amendment aliases
+    "amend": "amendment",
+    "change": "amendment",
+    # v2.11 figure aliases
+    "fig": "figure",
+    "diagram": "figure",
+    "chart": "figure",
+    # v2.11 signline aliases
+    "signature-line": "signline",
+    "sign-here": "signline",
+    "sig": "signline",
+    # v2.11 contact aliases
+    "person": "contact",
+    "party": "contact",
+    # v2.11 deadline aliases
+    "due": "deadline",
+    "milestone": "deadline",
+    "due-date": "deadline",
+    # v2.11 cite aliases
+    "citation": "quote",
+    "source": "quote",
+    "reference": "quote",
+}
 
 _ID_COUNTER = 0
 
@@ -219,7 +327,7 @@ def parse_safe(
             )
         )
 
-    document = IntentDocument(version="2.0", blocks=blocks, metadata=metadata)
+    document = IntentDocument(version="2.11", blocks=blocks, metadata=metadata)
     return ParseResult(document=document, warnings=warnings, errors=errors)
 
 
@@ -230,12 +338,16 @@ def _parse_keyword_line(
     warnings: list[ParseWarning],
     errors: list[ParseWarning],
 ) -> Optional[IntentBlock]:
-    match = re.match(r"^(\w+):\s*(.*)$", line)
+    match = re.match(r"^([\w][\w-]*):\s*(.*)$", line)
     if not match:
         return None
 
     keyword = match.group(1).lower()
     rest = match.group(2)
+
+    # Resolve aliases first
+    if keyword in ALIASES:
+        keyword = ALIASES[keyword]
 
     if keyword not in ALL_KEYWORDS:
         if unknown_keyword == "skip":
@@ -388,3 +500,26 @@ def _update_metadata(metadata: IntentMetadata, block: IntentBlock) -> None:
             metadata.model = str(block.properties["model"])
     elif block.type == "context":
         metadata.context.update({k: str(v) for k, v in block.properties.items()})
+    elif block.type == "track":
+        metadata.tracking = TrackingInfo(
+            version=str(block.properties.get("version", "")),
+            by=str(block.properties.get("by", "")),
+            active=True,
+        )
+    elif block.type == "meta":
+        metadata.meta.update({k: str(v) for k, v in block.properties.items()})
+    elif block.type == "sign":
+        metadata.signatures.append(
+            SignatureInfo(
+                signer=block.content,
+                role=str(block.properties.get("role", "")) or None,
+                at=str(block.properties.get("at", "")),
+                hash=str(block.properties.get("hash", "")),
+            )
+        )
+    elif block.type == "freeze":
+        metadata.freeze = FreezeInfo(
+            at=str(block.properties.get("at", "")),
+            hash=str(block.properties.get("hash", "")),
+            status=str(block.properties.get("status", "locked")),
+        )

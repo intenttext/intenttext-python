@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "intenttext"
-version = "1.1.0"
+version = "2.11.0"
 description = "IntentText - the semantic document format that is natively JSON"
 readme = "README.md"
 license = { text = "MIT" }
@@ -14,7 +14,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/intenttext/IntentText"
 Repository = "https://github.com/intenttext/intenttext-python"
-Documentation = "https://github.com/intenttext/IntentText/blob/main/docs/SPEC.md"
+Documentation = "https://itdocs.vercel.app"
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov"]

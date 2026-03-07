@@ -22,6 +22,29 @@ class IntentBlock:
 
 
 @dataclass
+class TrackingInfo:
+    version: str = ""
+    by: str = ""
+    active: bool = False
+
+
+@dataclass
+class SignatureInfo:
+    signer: str = ""
+    role: Optional[str] = None
+    at: str = ""
+    hash: str = ""
+    valid: Optional[bool] = None
+
+
+@dataclass
+class FreezeInfo:
+    at: str = ""
+    hash: str = ""
+    status: str = "locked"
+
+
+@dataclass
 class IntentMetadata:
     title: Optional[str] = None
     summary: Optional[str] = None
@@ -29,6 +52,10 @@ class IntentMetadata:
     model: Optional[str] = None
     language: str = "ltr"
     context: dict[str, str] = field(default_factory=dict)
+    tracking: Optional[TrackingInfo] = None
+    signatures: list[SignatureInfo] = field(default_factory=list)
+    freeze: Optional[FreezeInfo] = None
+    meta: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass

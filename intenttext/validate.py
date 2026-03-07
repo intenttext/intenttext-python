@@ -12,9 +12,13 @@ def validate(doc: IntentDocument) -> ValidationResult:
     step_ids = {
         block.id
         for block in doc.blocks
-        if block.type in {"step", "decision", "parallel", "gate", "call", "result"}
+        if block.type in {"step", "decision", "parallel", "gate", "call", "result", "handoff", "wait", "retry"}
     }
     all_ids = [block.id for block in doc.blocks]
+
+    has_track = any(block.type == "track" for block in doc.blocks)
+    has_sign = any(block.type == "sign" for block in doc.blocks)
+    has_freeze = any(block.type == "freeze" for block in doc.blocks)
 
     # Duplicate block IDs
     seen: set[str] = set()
@@ -106,6 +110,30 @@ def validate(doc: IntentDocument) -> ValidationResult:
                         message=f"Variable '{{{{{var}}}}}' is not declared in context: or step output",
                     )
                 )
+
+    # Trust validation: freeze without sign
+    if has_freeze and not has_sign:
+        issues.append(
+            ValidationIssue(
+                block_id="document",
+                block_type="document",
+                type="warning",
+                code="FREEZE_WITHOUT_SIGN",
+                message="Document is frozen but has no signatures",
+            )
+        )
+
+    # Trust validation: sign/freeze without track
+    if (has_sign or has_freeze) and not has_track:
+        issues.append(
+            ValidationIssue(
+                block_id="document",
+                block_type="document",
+                type="warning",
+                code="TRUST_WITHOUT_TRACK",
+                message="Document has sign/freeze blocks but no track: block",
+            )
+        )
 
     has_errors = any(issue.type == "error" for issue in issues)
     return ValidationResult(valid=not has_errors, issues=issues)
